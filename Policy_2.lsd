@@ -774,9 +774,9 @@ Object: COUNTRY C	1
 Param: annual_frequency 0 n + n n	4
 Param: begin_credit_rationing 0 n + n n	-1
 Param: begin_expenses_ceiling_rule 0 n + n n	-1
-Param: begin_flexible_exchange_rate 0 n + n n	0
-Param: begin_flexible_surplus_target 0 n + n n	0
-Param: begin_monetary_policy 0 n + n n	0
+Param: begin_flexible_exchange_rate 0 n + n n	-1
+Param: begin_flexible_surplus_target 0 n + n n	-1
+Param: begin_monetary_policy 0 n + n n	-1
 Param: begin_surplus_target_rule 0 n + n n	0
 Param: country_initial_depreciation_share_GDP 0 n + n n	0.1
 Param: country_initial_exports_share_GDP 0 n + n n	0.1
@@ -789,9 +789,9 @@ Param: switch_entry 0 n + n n	1
 Param: switch_extra_gov_expenses 0 n + n n	0
 Param: switch_extra_imports 0 n + n n	0
 Param: switch_fixed_bank_profit_distribution 0 n + n n	0
-Param: switch_interest_investment 0 n + n n	2
+Param: switch_interest_investment 0 n + n n	1
 Param: switch_interest_payment 0 n + n n	0
-Param: switch_monetary_policy 0 n + n n	1
+Param: switch_monetary_policy 0 n + n n	0
 Var: Country_Annual_CPI_Inflation 1 s + n n	0
 Var: Country_Annual_GDP 0 s + n n
 Var: Country_Annual_Growth 1 s + n n	0
@@ -1094,10 +1094,10 @@ Var: Government_Surplus_GDP_Ratio 0 s + n n
 Var: Government_Surplus_Rate_Target 1 s + n n	0
 Var: Government_Total_Taxes 1 s + n n	0
 Var: Government_Fiscal_Multiplier 0 s + n n
-Param: government_real_consumption_growth 0 n + n n	0.0025
-Param: government_real_input_growth 0 n + n n	0.0025
-Param: government_real_investment_growth 0 n + n n	0.0025
-Param: government_real_wage_growth 0 n + n n	0.0025
+Param: government_real_consumption_growth 0 n + n n	0.002
+Param: government_real_input_growth 0 n + n n	0.002
+Param: government_real_investment_growth 0 n + n n	0.002
+Param: government_real_wage_growth 0 n + n n	0.002
 Var: Government_Investment_GDP_Ratio 0 s + n n
 
 Object: SECTORS C	3
@@ -1115,7 +1115,7 @@ Param: sector_desired_market_share 0 n + n n	0.1	0.25	0.15
 Param: sector_elascitity_delay 0 n + n n	0.25	0.25	0.25
 Param: sector_elasticity_price 0 n + n n	1	1	1
 Param: sector_elasticity_quality 0 n + n n	0.5	0.5	0.5
-Param: sector_expectations 0 n + n n	0.1	0.1	0.1
+Param: sector_expectations 0 n + n n	0.3	0.3	0.3
 Param: sector_exports_coefficient 0 s + n n	0	0	0
 Param: sector_exports_elasticity_income 0 n + n n	1	1	1
 Param: sector_exports_elasticity_price 0 n + n n	1	1	1
@@ -1149,8 +1149,8 @@ Param: sector_markup_adjustment 0 n + n n	0.001	0.001	0.001
 Param: sector_number_object_firms 0 n + n n	100	40	60
 Param: sector_passthrough_inflation 0 s + n n	1	1	1
 Param: sector_passthrough_productivity 0 s + n n	0.8	0.8	0.8
-Param: sector_payback_period 0 n + n n	8	8	8
-Param: sector_price_frequency 0 n + n n	4	4	4
+Param: sector_payback_period 0 n + n n	30	30	30
+Param: sector_price_frequency 0 n + n n	1	1	1
 Param: sector_profits_distribution_rate 0 n + n n	0.8	0.8	0.8
 Param: sector_rnd_revenue_proportion 0 n + n n	0.01	0.01	0.01
 Param: sector_std_dev_innovation 0 n + n n	0.01	0.01	0.01
@@ -1506,7 +1506,7 @@ END_DESCRIPTION
 Parameter_begin_credit_rationing
 
 _INIT_
-All 1 instances equal to 0.
+All 1 instances equal to -1
 END_DESCRIPTION
 
 Parameter_begin_expenses_ceiling_rule
@@ -1518,7 +1518,7 @@ END_DESCRIPTION
 Parameter_begin_flexible_exchange_rate
 
 _INIT_
-All 1 instances equal to 0.
+All 1 instances equal to -1
 END_DESCRIPTION
 
 Parameter_begin_flexible_surplus_target
@@ -1536,7 +1536,7 @@ END_DESCRIPTION
 Parameter_begin_surplus_target_rule
 
 _INIT_
-All 1 instances equal to 0.
+All 1 instances equal to -1
 END_DESCRIPTION
 
 Parameter_country_initial_depreciation_share_GDP
@@ -1612,7 +1612,7 @@ END_DESCRIPTION
 Parameter_switch_monetary_policy
 
 _INIT_
-All 1 instances equal to 1.
+All 1 instances equal to 0
 END_DESCRIPTION
 
 Variable_Country_Annual_CPI_Inflation
@@ -3111,8 +3111,6 @@ END_DESCRIPTION
 
 Parameter_sector_expectations
 determines the sector expectation parameter to be used in expected demand calculation
-_INIT_
-All 3 instances equal to 0.1
 END_DESCRIPTION
 
 Parameter_sector_exports_coefficient
@@ -3291,14 +3289,12 @@ END_DESCRIPTION
 
 Parameter_sector_payback_period
 determines how many periods the firm will calculate the payback in replacement investment
-_INIT_
-All 3 instances equal to 8
 END_DESCRIPTION
 
 Parameter_sector_price_frequency
 determines how many time periods consists the price frequency, in how many periods the firm will adjust prices
 _INIT_
-All 3 instances equal to 4
+All 3 instances equal to 1.
 END_DESCRIPTION
 
 Parameter_sector_profits_distribution_rate

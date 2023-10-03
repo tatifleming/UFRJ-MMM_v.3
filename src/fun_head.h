@@ -36,14 +36,11 @@ void init_map( ) { };
 bool fast_lookup = true;
 #endif
 
-// set pointers to NULL to protect users (small overhead) if not disabled
-#if defined FAST_LOOKUP && ! defined NO_POINTER_INIT
-bool no_ptr_chk = false;
-#define INIT_POINTERS \
-	h = i = j = k = 0; \
-	cur = cur1 = cur2 = cur3 = cur4 = cur5 = cur6 = cur7 = cur8 = cur9 = cyccur = cyccur2 = cyccur3 = NULL; \
-	curl = curl1 = curl2 = curl3 = curl4 = curl5 = curl6 = curl7 = curl8 = curl9 = NULL; \
-	f = NULL;
+// enable pointer checking to protect users (medium overhead) if not disabled
+#if defined FAST_LOOKUP && ! defined NO_POINTER_CHECK
+
+const bool no_pointer_check = false;
+
 #define CHK_PTR_NOP( O ) if ( chk_ptr( O ) ) bad_ptr_void( O, __FILE__, __LINE__ );
 #define CHK_PTR_CHR( O ) chk_ptr( O ) ? bad_ptr_chr( O, __FILE__, __LINE__ ) :
 #define CHK_PTR_DBL( O ) chk_ptr( O ) ? bad_ptr_dbl( O, __FILE__, __LINE__ ) :
@@ -53,14 +50,11 @@ bool no_ptr_chk = false;
 #define CHK_PTR_VOID( O ) chk_ptr( O ) ? bad_ptr_void( O, __FILE__, __LINE__ ) :
 #define CHK_OBJ_OBJ( O ) chk_obj( O ) ? bad_ptr_obj( O, __FILE__, __LINE__ ) :
 #define CHK_HK_OBJ( O, X ) chk_hook( O, X ) ? no_hook_obj( O, X, __FILE__, __LINE__ ) :
-#define CHK_LNK_DBL( O ) O == NULL ? nul_lnk_dbl( __FILE__, __LINE__ ) :
-#define CHK_LNK_OBJ( O ) O == NULL ? nul_lnk_obj( __FILE__, __LINE__ ) :
-#define CHK_LNK_VOID( O ) O == NULL ? nul_lnk_void( __FILE__, __LINE__ ) :
-#define CHK_NODE_CHR( O ) O->node == NULL ? no_node_chr( O->label, __FILE__, __LINE__ ) :
-#define CHK_NODE_DBL( O ) O->node == NULL ? no_node_dbl( O->label, __FILE__, __LINE__ ) :
+
 #else
-bool no_ptr_chk = true;
-#define INIT_POINTERS
+
+const bool no_pointer_check = true;
+
 #define CHK_PTR_NOP( O )
 #define CHK_PTR_CHR( O )
 #define CHK_PTR_DBL( O )
@@ -70,11 +64,40 @@ bool no_ptr_chk = true;
 #define CHK_PTR_VOID( O )
 #define CHK_OBJ_OBJ( O )
 #define CHK_HK_OBJ( O, X )
+
+#ifdef NO_POINTER_CHECK
+#undef NO_POINTER_CHECK
+#endif
+
+#endif
+
+// initialize pointers to NULL to protect users (small overhead) if not disabled
+#if defined FAST_LOOKUP && ! defined NO_POINTER_INIT
+
+const bool no_pointer_init = false;
+
+#define INIT_POINTERS \
+	h = i = j = k = 0; \
+	cur = cur1 = cur2 = cur3 = cur4 = cur5 = cur6 = cur7 = cur8 = cur9 = cyccur = cyccur2 = cyccur3 = NULL; \
+	curl = curl1 = curl2 = curl3 = curl4 = curl5 = curl6 = curl7 = curl8 = curl9 = NULL; \
+	f = NULL;
+#define CHK_LNK_DBL( O ) O == NULL ? nul_lnk_dbl( __FILE__, __LINE__ ) :
+#define CHK_LNK_OBJ( O ) O == NULL ? nul_lnk_obj( __FILE__, __LINE__ ) :
+#define CHK_LNK_VOID( O ) O == NULL ? nul_lnk_void( __FILE__, __LINE__ ) :
+#define CHK_NODE_CHR( O ) O->node == NULL ? no_node_chr( O->label, __FILE__, __LINE__ ) :
+#define CHK_NODE_DBL( O ) O->node == NULL ? no_node_dbl( O->label, __FILE__, __LINE__ ) :
+
+#else
+
+const bool no_pointer_init = true;
+
+#define INIT_POINTERS
 #define CHK_LNK_DBL( O )
 #define CHK_LNK_OBJ( O )
 #define CHK_LNK_VOID( O )
 #define CHK_NODE_CHR( O )
 #define CHK_NODE_DBL( O )
+
 #endif
 
 // user defined variables for all equations (to be defined in equation file)
@@ -99,7 +122,7 @@ bool no_ptr_chk = true;
 
 #define EQ_TEST_RESULT \
 	if ( quit == 0 && ( ( ! use_nan && is_nan( res ) ) || is_inf( res ) ) ) \
-		error_hard( "invalid equation result", "check your equation code to prevent invalid math operations\nPossible problems:\n- Illegal math operation (division by zero, log of negative number etc.)\n- Use of too-large/small value in calculation\n- Use of non-initialized temporary variable in calculation", true, "equation for '%s' produces the invalid value '%lf' at time %d", label, res, t );
+		error_hard( "invalid equation result", "check your equation code to prevent invalid math operations\nPossible problems:\n- Illegal math operation (division by zero, log of negative number etc.)\n- Use of too-large/small value in calculation\n- Use of non-initialized temporary variable in calculation", true, "equation for '%s' produces the invalid value '%lf' at case %d", label, res, t );
 
 #ifndef _NW_
 #define DEBUG_CODE \
@@ -286,6 +309,8 @@ bool no_ptr_chk = true;
 #define CURRENT ( var->val[ 0 ] )
 #define THIS ( p )
 #define CALLER ( c )
+#define NAME ( ( const char * ) p->label )
+#define NAMES( O ) ( chk_ptr( O ) ? NULL : ( const char * ) O->label )
 #define NEXT ( p->next )
 #define NEXTS( O ) ( CHK_PTR_OBJ( O ) O->next )
 #define PARENT ( p->up )

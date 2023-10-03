@@ -37,7 +37,7 @@ It is called in the browser, INTERF.CPP, immediately after save_struct, by the
 root of the model.
 
 - void object::load_struct( FILE *f )
-Initialize a model by creating  one as defined
+Initialize a model by creating	one as defined
 in the data file. The model, after this stage, has only one instance for each
 object type and variables and parameters are simply labels.
 
@@ -197,8 +197,8 @@ bool object::load_param( const char *file_name, int repl, FILE *f )
 		f = search_data_str( file_name, "DATA", label );
 	else
 	{
-		fscanf( f, "%99s", str ); 		// skip the 'Object: '
-		fscanf( f, " %99s", str ); 		// skip the 'label'
+		fscanf( f, "%99s", str );		// skip the 'Object: '
+		fscanf( f, " %99s", str );		// skip the 'label'
 	}
 
 	if ( f == NULL )
@@ -223,13 +223,13 @@ bool object::load_param( const char *file_name, int repl, FILE *f )
 
 	for ( cv = v; cv != NULL; cv = cv->next )
 	{
-		fscanf( f, "%99s ", str ); 		// skip the 'Element: '
-		fscanf( f, "%99s ", str ); 		// skip the 'label'
+		fscanf( f, "%99s ", str );		// skip the 'Element: '
+		fscanf( f, "%99s ", str );		// skip the 'label'
 
 		if ( f == NULL )
 			return false;
 
-		if ( fscanf( f, "%d %c %c %c %c", &( cv->num_lag ), &ch1, &ch, &( cv->debug ), &ch2   ) != 5 )
+		if ( fscanf( f, "%d %c %c %c %c", &( cv->num_lag ), &ch1, &ch, &( cv->debug ), &ch2	  ) != 5 )
 			return false;
 
 		cv->save = ( tolower( ch1 ) == 's' ) ? true : false;
@@ -504,7 +504,7 @@ bool open_configuration( object *&r, bool reload )
 
 	if ( ! reload || strlen( simul_name ) == 0 )
 	{									// ask user the file to use, if not reloading
-		cmd( "set fn [ tk_getOpenFile -parent . -title \"Open Configuration File\"  -defaultextension \".lsd\" -initialdir \"$path\" -filetypes { { {LSD model file} {.lsd} } } ]" );
+		cmd( "set fn [ tk_getOpenFile -parent . -title \"Open Configuration File\"	-defaultextension \".lsd\" -initialdir \"$path\" -filetypes { { {LSD model file} {.lsd} } } ]" );
 		cmd( "if { [ string length $fn ] > 0 && ! [ fn_spaces \"$fn\" . ] } { \
 				set path [ file dirname $fn ]; \
 				set fn [ string map -nocase [ list [ file extension $fn ] \"\" ] [ file tail $fn ] ]; \
@@ -553,7 +553,7 @@ bool open_configuration( object *&r, bool reload )
 			if ( strlen( path ) > 0 )
 				cmd( "ttk::messageBox -parent . -type ok -title Error -icon error -message \"File not found\" -detail \"File for model '%s' not found in directory '%s'.\"", strlen( simul_name ) > 0 ? simul_name : NO_CONF_NAME, path );
 			else
-				cmd( "ttk::messageBox -parent . -type ok -title Error -icon error -message \"File not found\" -detail \"File for model '%s' not found in current directory\"", strlen( simul_name ) > 0 ? simul_name : NO_CONF_NAME  );
+				cmd( "ttk::messageBox -parent . -type ok -title Error -icon error -message \"File not found\" -detail \"File for model '%s' not found in current directory\"", strlen( simul_name ) > 0 ? simul_name : NO_CONF_NAME	 );
 			return false;
 
 		case 2:
@@ -567,8 +567,9 @@ bool open_configuration( object *&r, bool reload )
 		case 7:
 		case 8:									// problem from MODELREPORT section
 		case 9:									// problem from DESCRIPTION section
-			cmd( "ttk::messageBox -parent . -type ok -title Error -icon error -message \"Partially damaged file (%d)\" -detail \"Element descriptions were lost but the configuration can still be used.\n\nPlease check if the desired file was selected or re-enter the description information if needed.\"", i );
-			reset_description( r );
+			cmd( "ttk::messageBox -parent . -type ok -title Error -icon error -message \"Partially damaged file (%d)\" -detail \"Element descriptions were lost but the configuration can still be used.\n\nPlease check if the desired file was selected or re-enter the description information if needed.\n\nIf this is a sensitivity analysis configuration file, this message is expected, and configuration file is ok.\"", i );
+			reset_description( root );
+			break;
 
 		case 10:								// problem from DOCUOBSERVE section
 		case 11:
@@ -590,10 +591,10 @@ bool open_configuration( object *&r, bool reload )
 /*****************************************************************************
 LOAD_CONFIGURATION
 	Load current defined configuration
-	If quick is true, just the structure and the parameters are retrieved
+	If quick is != 0, just the structure and the parameters are retrieved
 	Returns: 0: load ok, 1,2,3,4,...: load failure
 ******************************************************************************/
-int load_configuration( bool reload, bool quick )
+int load_configuration( bool reload, int quick )
 {
 	int i, j = 0, load = 0;
 	char msg[ MAX_LINE_SIZE ], name[ MAX_PATH_LENGTH ], full_name[ 2 * MAX_PATH_LENGTH ];
@@ -633,7 +634,7 @@ int load_configuration( bool reload, bool quick )
 		goto endLoad;
 	}
 
-	if ( reload && quick )						// just quick reload?
+	if ( reload && quick == 2 )					// just quick reload?
 		goto endLoad;
 
 	sim_num = 1;
@@ -654,7 +655,7 @@ int load_configuration( bool reload, bool quick )
 
 	max_step = 100;
 	when_debug = stack_info = prof_min_msecs = 0;
-	prof_obs_only = prof_aggr_time = parallel_disable = 0;
+	prof_obs_only = prof_aggr_time = no_ptr_chk = parallel_disable = 0;
 	fscanf( f, "%999s", msg );					// should be MAX_STEP
 	if ( strcmp( msg, "MAX_STEP" ) )
 	{
@@ -662,21 +663,21 @@ int load_configuration( bool reload, bool quick )
 		goto endLoad;
 	}
 
-	if ( fgets( msg, MAX_LINE_SIZE, f ) == NULL )// should be 1 to 7 values
+	if ( fgets( msg, MAX_LINE_SIZE, f ) == NULL )// should be 1 to 8 values
 	{
 		load = 6;
 		goto endLoad;
 	}
 
-	i = sscanf( msg, "%d %d %d %d %d %d %d", & max_step, & when_debug, & stack_info, & prof_min_msecs, & prof_obs_only, & prof_aggr_time, & parallel_disable );
+	i = sscanf( msg, "%d %d %d %d %d %d %d %d", & max_step, & when_debug, & stack_info, & prof_min_msecs, & prof_obs_only, & prof_aggr_time, & no_ptr_chk, & parallel_disable );
 
-	if ( i < 1 || max_step <= 0 || when_debug < 0 || stack_info < 0 || prof_min_msecs < 0 || prof_obs_only < 0 || prof_obs_only > 1 || prof_aggr_time < 0 || prof_aggr_time > 1 || parallel_disable < 0 || parallel_disable > 1 )
+	if ( i < 1 || max_step <= 0 || when_debug < 0 || stack_info < 0 || prof_min_msecs < 0 || prof_obs_only < 0 || prof_obs_only > 1 || prof_aggr_time < 0 || prof_aggr_time > 1 || no_ptr_chk < 0 || no_ptr_chk > 1 || parallel_disable < 0 || parallel_disable > 1 )
 	{
 		load = 6;
 		goto endLoad;
 	}
 
-	fscanf( f, "%999s", msg );                    // should be EQUATION
+	fscanf( f, "%999s", msg );					  // should be EQUATION
 	if ( strcmp( msg, "EQUATION" ) )
 	{
 		load = 7;
@@ -709,6 +710,12 @@ int load_configuration( bool reload, bool quick )
 		goto endLoad;
 	}
 
+	empty_description( );						// remove existing descriptions
+	strcpy( lsd_eq_file, "" );					// and equation file
+
+	if ( quick == 1 )							// no descriptions
+		goto endLoad;
+
 	fscanf( f, "%999s", msg );					// should be DESCRIPTION
 	if ( strcmp( msg, "DESCRIPTION" ) )
 	{
@@ -716,7 +723,6 @@ int load_configuration( bool reload, bool quick )
 		goto endLoad;
 	}
 
-	empty_description( );						// remove existing descriptions
 	i = fscanf( f, "%999s", msg );				// should be the first description
 	for ( j = 0; strcmp( msg, "DOCUOBSERVE" ) && i == 1 && j < MAX_FILE_TRY; ++j )
 	{
@@ -756,7 +762,7 @@ int load_configuration( bool reload, bool quick )
 		goto endLoad;
 	}
 
-	fscanf( f, "%999s", msg );  				// should be the DOCUINITIAL
+	fscanf( f, "%999s", msg );					// should be the DOCUINITIAL
 	if ( strcmp( msg, "DOCUINITIAL" ) )
 	{
 		load = 12;
@@ -785,7 +791,6 @@ int load_configuration( bool reload, bool quick )
 		goto endLoad;
 	}
 
-	strcpy( lsd_eq_file, "" );
 	for ( j = 0; fgets( msg, MAX_LINE_SIZE, f ) != NULL && strncmp( msg, "END_EQ_FILE", 11 ) && strlen( lsd_eq_file ) < MAX_FILE_SIZE - MAX_LINE_SIZE && j < MAX_FILE_TRY; ++j )
 		strcatn( lsd_eq_file, msg, MAX_FILE_SIZE );
 
@@ -830,7 +835,7 @@ void unload_configuration ( bool full )
 	reset_blueprint( NULL );
 
 	empty_cemetery( );							// garbage collection
-	empty_sensitivity( rsense ); 				// discard sensitivity analysis data
+	empty_sensitivity( rsense );				// discard sensitivity analysis data
 
 	save_ok = true;								// valid structure to save
 	unsavedData = false;						// no unsaved simulation results
@@ -900,12 +905,12 @@ void save_single( variable *v )
 
 #ifndef _NP_
 	// prevent concurrent use by more than one thread
-	lock_guard < mutex > lock( v->parallel_comp );
+	rec_lguardT lock( v->parallel_comp );
 #endif
 
 	set_lab_tit( v );
 	snprintf( fn, MAX_PATH_LENGTH, "%s_%s-%d_%d_seed-%d.res", v->label, v->lab_tit, v->start, v->end, seed - 1 );
-	f = fopen( fn, "wt" );  		// use text mode for Windows better compatibility
+	f = fopen( fn, "wt" );			// use text mode for Windows better compatibility
 
 	fprintf( f, "%s %s (%d %d)\t\n", v->label, v->lab_tit, v->start, v->end );
 
@@ -922,9 +927,10 @@ void save_single( variable *v )
 /*****************************************************************************
 SAVE_CONFIGURATION
 	Save current defined configuration (adding tag index if appropriate)
+	If quick is true, just the structure and the parameters is saved
 	Returns: true: save ok, false: save failure
 ******************************************************************************/
-bool save_configuration( int findex, const char *dest_path )
+bool save_configuration( int findex, const char *dest_path, bool quick )
 {
 	bool save_ok = false;
 	int delta, indexDig, save_len;
@@ -1005,27 +1011,30 @@ bool save_configuration( int findex, const char *dest_path )
 
 	fprintf( f, "\nSIM_NUM %d\nSEED %d\nMAX_STEP %d", sim_num, seed + delta, max_step );
 
-	if ( when_debug > 0 || stack_info > 0 || prof_min_msecs > 0 || prof_obs_only || prof_aggr_time || parallel_disable )
-		fprintf( f, " %d %d %d %d %d %d", when_debug, stack_info, prof_min_msecs, prof_obs_only ? 1 : 0, prof_aggr_time ? 1 : 0, parallel_disable ? 1 : 0 );
+	if ( when_debug > 0 || stack_info > 0 || prof_min_msecs > 0 || prof_obs_only || prof_aggr_time || no_ptr_chk || parallel_disable )
+		fprintf( f, " %d %d %d %d %d %d %d", when_debug, stack_info, prof_min_msecs, prof_obs_only ? 1 : 0, prof_aggr_time ? 1 : 0, no_ptr_chk ? 1 : 0, parallel_disable ? 1 : 0 );
 
 	fprintf( f, "\nEQUATION %s\nMODELREPORT %s\n", equation_name, name_rep );
 
-	fprintf( f, "\nDESCRIPTION\n\n" );
-	save_description( root, f );
+	if ( ! quick )
+	{
+		fprintf( f, "\nDESCRIPTION\n\n" );
+		save_description( root, f );
 
-	fprintf( f, "\nDOCUOBSERVE\n" );
-	for ( cd = descr; cd != NULL; cd = cd->next )
-		if ( cd->observe == 'y' )
-			fprintf( f, "%s\n", cd->label );
-	fprintf( f, "\nEND_DOCUOBSERVE\n\n" );
+		fprintf( f, "\nDOCUOBSERVE\n" );
+		for ( cd = descr; cd != NULL; cd = cd->next )
+			if ( cd->observe == 'y' )
+				fprintf( f, "%s\n", cd->label );
+		fprintf( f, "\nEND_DOCUOBSERVE\n\n" );
 
-	fprintf( f, "\nDOCUINITIAL\n" );
-	for ( cd = descr; cd != NULL; cd = cd->next )
-		if ( cd->initial == 'y' )
-			fprintf( f, "%s\n", cd->label );
-	fprintf( f, "\nEND_DOCUINITIAL\n\n" );
+		fprintf( f, "\nDOCUINITIAL\n" );
+		for ( cd = descr; cd != NULL; cd = cd->next )
+			if ( cd->initial == 'y' )
+				fprintf( f, "%s\n", cd->label );
+		fprintf( f, "\nEND_DOCUINITIAL\n\n" );
 
-	save_eqfile( f );
+		save_eqfile( f );
+	}
 
 	if ( ! ferror( f ) )
 	{
@@ -1089,7 +1098,7 @@ int load_sensitivity( FILE *f )
 		cs->v = NULL;						// initialize struct pointers
 		cs->next = NULL;
 
-		cs->label = new char[ strlen( lab ) + 1 ];  // save element name
+		cs->label = new char[ strlen( lab ) + 1 ];	// save element name
 		strcpy( cs->label, lab );
 
 		// get lags and # of values to test
@@ -1103,7 +1112,7 @@ int load_sensitivity( FILE *f )
 		if ( cc == 'i' || cc == 'd' || cc == 'f' )
 		{
 			cs->integer = ( cc == 'i' ) ? true : false;
-			fscanf( f, ": " );	 			// remove separator
+			fscanf( f, ": " );				// remove separator
 		}
 		else
 			if ( cc == ':' )
@@ -1331,7 +1340,7 @@ SAVE_EQFILE
 ***************************************************/
 void save_eqfile( FILE *f )
 {
-	if ( strlen( lsd_eq_file ) == 0 )
+	if ( eq_file != NULL && ( strlen( lsd_eq_file ) == 0 || strcmp( lsd_eq_file, eq_file ) != 0 ) )
 		strcpyn( lsd_eq_file, eq_file, MAX_FILE_SIZE );
 
 	fprintf( f, "\nEQ_FILE\n" );
@@ -1408,7 +1417,7 @@ Open tail/multitail to show log files dynamically
 ****************************************************/
 void show_logs( const char *path, vector < string > & logs, bool par_cntl )
 {
-	char exec[ MAX_PATH_LENGTH  ];
+	char exec[ MAX_PATH_LENGTH	];
 	int i, j, n, sz;
 
 	cmd( "switch [ ttk::messageBox -parent . -type yesno -default yes -icon info -title \"Background run monitor\" -message \"Open the background run monitor?\" -detail \"The selected simulation runs were started as parallel background job(s). Each job progress can be monitored in a separated window results by choosing 'Yes'\n\nLog files are being created in the folder:\n\n[ fn_break [ file nativename \"%s\" ] 40 ]\" ] { yes { set ans 1 } no { set ans 0 } }", path );

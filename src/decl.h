@@ -107,7 +107,7 @@ Relevant flags (when defined):
 bool is_finite( double x );
 bool is_inf( double x );
 bool is_nan( double x );
-bool results_alt_path( const char * );  				// change where results are saved.
+bool results_alt_path( const char * );					// change where results are saved.
 double _abs( double a );
 double alapl( double mu, double alpha1, double alpha2 );// draw from an asymmetric laplace distribution
 double alaplcdf( double mu, double alpha1, double alpha2, double x );	// asymmetric laplace cdf
@@ -160,18 +160,19 @@ void *set_random( int gen );							// set random generator
 // global variables (visible to the users)
 extern bool fast;						// flag to hide LOG messages & runtime (read-only)
 extern bool fast_lookup;				// flag for fast equation look-up mode
-extern bool no_ptr_chk;					// disable user pointer checking
 extern bool no_saved;					// disable the usage of saved values as lagged ones
 extern bool no_search;					// disable the standard variable search mechanism
 extern bool no_zero_instance;			// flag to allow deleting last object instance
 extern bool use_nan;					// flag to allow using Not a Number value
 extern char *path;						// folder where the configuration is
 extern char *simul_name;				// configuration name being run (for saving networks)
+extern const bool no_pointer_check;		// user pointer checking static disable
 extern double def_res;					// default equation result
 extern eq_mapT eq_map;					// map to fast equation look-up
 extern int cur_sim;
 extern int debug_flag;
 extern int max_step;
+extern int no_ptr_chk;					// dynamic disable user pointer checking
 extern int sim_num;
 extern int t;
 extern unsigned seed;
@@ -195,6 +196,7 @@ FILE *search_data_ent( const char *name, variable *v );
 FILE *search_data_str( const char *name, const char *init, const char *str );
 FILE *search_str( const char *name, const char *str );
 bool abort_run_threads( void );
+bool add_rt_plot_tab( const char *w, int id_sim );
 bool add_unsaved( void );
 bool alloc_save_mem( object *r );
 bool alloc_save_var( variable *v );
@@ -210,7 +212,7 @@ bool load_description( const char *msg, FILE *f );
 bool load_prev_configuration( void );
 bool need_res_dir( const char *path, const char *sim_name, char *buf, int buf_sz );
 bool open_configuration( object *&r, bool reload );
-bool save_configuration( int findex = 0, const char *dest_path = NULL );
+bool save_configuration( int findex = 0, const char *dest_path = NULL, bool quick = false );
 bool save_sensitivity( FILE *f );
 bool search_parallel( object *r );
 bool sensitivity_clean_dir( const char *path );
@@ -236,7 +238,7 @@ int check_affected( object *c, object *pivot, int level, int affected[ ] );
 int compute_copyfrom( object *c, const char *parWnd );
 int entry_new_objnum( object *c, const char *tag );
 int hyper_count( const char *lab );
-int load_configuration( bool reload, bool quick = false );
+int load_configuration( bool reload, int quick = 0 );
 int load_sensitivity( FILE *f );
 int logic_op_code( const char *lop, const char *errmsg );
 int min_hborder( int pdigits, double miny, double maxy );
@@ -257,7 +259,6 @@ object *skip_next_obj( object *t, int *count );
 void NOLH_clear( void );
 void add_cemetery( variable *v );
 void add_da_plot_tab( const char *w, int id_plot );
-void add_rt_plot_tab( const char *w, int id_sim );
 void analysis( bool mc = false );
 void ancestors( object *r, FILE *f, bool html = true );
 void assign( object *r, int *idx, const char *lab );
@@ -497,21 +498,21 @@ extern int prof_obs_only;		// profile only observed variables
 extern int saveConf;			// save configuration on results saving (bool)
 extern int series_saved;		// number of series saved
 extern int stack;				// LSD stack call level
-extern int stack_info; 			// LSD stack control
+extern int stack_info;			// LSD stack control
 extern int strWindowOn;			// control the presentation of the model structure window (bool)
 extern int watch;				// allow for graph generation interruption (bool)
-extern int when_debug;      	// next debug stop time step (0 for none )
+extern int when_debug;			// next debug stop time step (0 for none )
 extern int wr_warn_cnt;			// invalid write operations warning counter
 extern long nodesSerial;		// network node serial number global counter
 extern map< string, profile > prof;// set of saved profiling times
 extern mt19937 mt32;			// Mersenne-Twister 32 bits generator
 extern nolh NOLH[ NOLH_TABS ];	// characteristics of NOLH tables
-extern object *blueprint;   	// LSD blueprint (effective model in use )
+extern object *blueprint;		// LSD blueprint (effective model in use )
 extern object *currObj;			// pointer to current object in browser
 extern object *wait_delete;		// LSD object waiting for deletion
 extern o_setT obj_list;			// list with all existing LSD objects
-extern sense *rsense;       	// LSD sensitivity analysis structure
-extern variable *cemetery;  	// LSD saved data from deleted objects
+extern sense *rsense;			// LSD sensitivity analysis structure
+extern variable *cemetery;		// LSD saved data from deleted objects
 extern variable *last_cemetery;	// LSD last saved data from deleted objects
 extern vector < string > res_list;// list of results files last saved
 extern void *random_engine;		// current random number generator engine
@@ -520,6 +521,7 @@ extern void *random_engine;		// current random number generator engine
 #ifndef _NP_
 extern atomic < bool > parallel_ready;// flag to indicate multitasking is available
 extern map< thread::id, worker * > thr_ptr;// worker thread pointers
+extern mutex lock_obj_list;		// lock for object list for parallel manipulation
 extern mutex lock_run_logs;		// lock run_logs for parallel updating
 extern string run_log;			// consolidated runs log
 extern thread run_monitor;		// thread monitoring parallel instances
