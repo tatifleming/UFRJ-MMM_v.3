@@ -10,7 +10,7 @@ MMM_v.3.6
 595x462+456+20
 1042x591+822+323
 Policy_2.lsd
-Root
+COUNTRY
 1
 0
 0.0
